@@ -1,44 +1,38 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import * as echarts from "echarts";
-import bg from "../assets/treemapBg.svg";
-async function init() {
-  var myChart = echarts.init(chartDom.value);
-  
-  let color = new echarts.graphic.LinearGradient(  0, 0, 1, 0, // 从左到右的渐变
+import { setOpacity } from "@common/color";
+let colorList = ["#57BEFB", "#FFDB66", "#DDFEFF", "#00D5A2", "#3854B8", "#A3BD19", "#44D3DC", "#DA4A75"];
+let colorMap = colorList.map((item) => {
+  return new echarts.graphic.LinearGradient(0, 0, 1, 0, // 从左到右的渐变
     [
-      { offset: 0.06, color: 'rgba(87, 190, 251, 0.24)' }, // 6% 处的颜色
-      { offset: 1, color: 'rgba(87, 190, 251, 0)' }, // 100% 处的颜色
+      { offset: 0.06, color: setOpacity(item, 0.24) }, // 6% 处的颜色
+      { offset: 1, color: setOpacity(item, 0) }, // 100% 处的颜色
     ]
   )
+})
+let borderColor = new echarts.graphic.LinearGradient(0, 0, 1, 0, // 从左到右的渐变
+    [
+      { offset: 0.1, color: setOpacity('#fff', 0) }, // 6% 处的颜色
+      { offset: 0.5, color: setOpacity('#fff', 0.4) }, // 6% 处的颜色
+      { offset: 0.9, color: setOpacity('#fff', 0) }, // 100% 处的颜色
+    ]
+  )
+const data = [{ "label": "A", "value": 50 }, { "label": "B", "value": 30 }, { "label": "C", "value": 20 }, { "label": "D", "value": 40 }, { "label": "E", "value": 60 }, { "label": "F", "value": 70 }, { "label": "G", "value": 90 }, { "label": "H", "value": 100 }]
+async function init() {
+  var myChart = echarts.init(chartDom.value);
+  let count = data.reduce((acc, cur) => acc + cur.value, 0);
 
-  // 准备数据
-  var data = [
-    {
-      name: "山东",
-      value: 9999,
-      itemStyle: { color },
-      
-      children: [
-        { name: "青岛", value: 888 },
-        { name: "济南", value: 666, children: [
-            {
-              name: '街道',
-              value: 20
-            }
-          ] },
-       
-      ],
-    },
-    {
-      name: "潍坊",
-      value: 5555,
-      itemStyle: { color: "#00541d" },
-    },
-  ];  
-  let count = data.reduce((acc, cur) => acc + cur.value, 0);  
+  let seriesData = data.map((item, index) => { 
+    return {
+      name: item.label,
+      value: item.value,
+      itemStyle: { color: colorMap[index] },
+    }  
+  })
+  
   // 配置option
-  var option = {
+  var option: any = {
     tooltip: {
       trigger: "item",
       backgroundColor: "#0C0D0D",
@@ -46,7 +40,7 @@ async function init() {
       textStyle: {
         color: "#D3FFFF",
       },
-      formatter: (params) => {
+      formatter: (params: { name: any; value: number; }) => {
         return `${params.name}&nbsp&nbsp${((params.value / count) * 100).toFixed(
           2
         )}% <br />${params.value}&nbsp&nbsp人次`;
@@ -65,37 +59,56 @@ async function init() {
         leafDepth: 1, // 控制展示的层级深度
         // colorSaturation:0,
         // visibleMin:2,// 某个节点小于这个数值，不显示
-        drillDownIcon :'',
-        nodeClick:false, //点击节点是否生效
+        drillDownIcon: '',
+        nodeClick: false, //点击节点是否生效
         roam: false, //静止平移和拖拽
-        breadcrumb:{show:false},//面包屑，能够显示当前节点的路径。
-        itemStyle:{
+        breadcrumb: { show: false },//面包屑，能够显示当前节点的路径。
+        itemStyle: {
           borderWidth: 2,
-          borderColor:'#151515',
-          color: undefined, 
+          borderColor: '#151515',
+          color: undefined,
         },
         label: {
-          formatter:'{b|{b}}',
+          // formatter: '{b|{b}}\n{hr|}\n{c|{c}}',
+          formatter: function (params: { name: string; value: number; }) {
+            let arr = [
+              '{b|' + params.name + '}',
+              '{hr|}',
+              '{c|' +
+                ((params.value / count) * 100).toFixed(2) + '%'
+                +
+                '} '
+            ];
+            return arr.join('\n');
+          },
           rich: {
             b: {
-              width: 71,
-              height: 48,
-              align: "center",
-              // backgroundColor: {
-              //   image: bg, // 这里替换为你的图片路径
-              // },
-              color: "#000",
-              fontSize: 18,
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 500,
+              align: 'center',
             },
+            hr:{
+              width: '100%',
+              borderColor,
+              borderWidth: 0.5,
+              height: 0,
+              lineHeight: 10
+            },
+            c: {
+              color: "#fff",
+              align: 'center',
+              fontSize: 14,
+              fontWeight: 400,
+              fontFamily: 'PingFang SC',
+            },  
           },
         },
-        data: data,
+        data: seriesData,
       },
     ],
   };
   option && myChart.setOption(option);
-  console.log(option,'6666666666666666');
-  
   // 使用配置项和数据显示图表
   // myChart.setOption(option);
   //   // 监听鼠标移入事件

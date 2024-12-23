@@ -36,7 +36,7 @@ export default defineConfig({
     },
   },
   server: {
-    open: '/',
+    // open: '/',
     watch: {
       ignored: ['**/**/config.json', '**/dist/**'],
     },

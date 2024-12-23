@@ -1,29 +1,33 @@
 <script lang="ts" setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted, nextTick, reactive } from "vue";
 import * as echarts from "echarts";
-import _ from 'lodash';
-import bg from "../assets/treemapBg.svg";
-let colorList = ["#57BEFB","#FFDB66","#DDFEFF", "#00D5A2", "#3854B8","#A3BD19", "#44D3DC","#DA4A75"];
+import { cloneDeep } from 'lodash-es';
+import { getColorFromIndex, getColorKey, replaceSvgColor, setOpacity } from "@common/color";
+import bg from "@/assets/treemapBg.svg";
+let colorList = ["#57BEFB", "#FFDB66", "#DDFEFF", "#00D5A2", "#3854B8", "#A3BD19", "#44D3DC", "#DA4A75"];
+const data = [{ "label": "A", "value": 50 }, { "label": "B", "value": 30 }, { "label": "C", "value": 20 }, { "label": "D", "value": 40 }, { "label": "E", "value": 60 }, { "label": "F", "value": 70 }, { "label": "G", "value": 90 }, { "label": "H", "value": 100 }]
+let borderColor = new echarts.graphic.LinearGradient(0, 0, 1, 0, // 从左到右的渐变
+    [
+      { offset: 0.1, color: setOpacity('#fff', 0) }, // 6% 处的颜色
+      { offset: 0.5, color: setOpacity('#fff', 0.4) }, // 6% 处的颜色
+      { offset: 0.9, color: setOpacity('#fff', 0) }, // 100% 处的颜色
+    ]
+  )
 async function init() {
   var myChart = echarts.init(chartDom.value);
 
-  // 准备数据
-  var data = [
-    {
-      name: "山东",
-      value: 9999,
-      itemStyle: { color: '#151515' },
-    },
-    {
-      name: "潍坊",
-      value: 5555,
-      itemStyle: { color: '#151515' },
-    },
-  ];
   let count = data.reduce((acc, cur) => acc + cur.value, 0);
 
+  let seriesData = data.map((item, index) => { 
+    return {
+      value: item.value,
+      name:item.label +'\n\n' + ((item.value / count) * 100).toFixed(2) + '%',
+      itemStyle: { color: '#151515'},
+    }  
+  })
+
   // 配置option
-  var option = {
+  var option:any = {
     tooltip: {
       trigger: "item",
       backgroundColor: "#0C0D0D",
@@ -31,7 +35,7 @@ async function init() {
       textStyle: {
         color: "#D3FFFF",
       },
-      formatter: (params) => {
+      formatter: (params: { name: any; value: number; }) => {
         return `${params.name}&nbsp&nbsp${((params.value / count) * 100).toFixed(
           2
         )}% <br />${params.value}&nbsp&nbsp人次`;
@@ -62,47 +66,44 @@ async function init() {
           gapWidth: 4, // 间距
         },
         label: {
-          formatter: '{b|{b}}',
-          rich: {
-            b: {
-              width: 71,
-              height: 48,
-              align: "center",
-              // backgroundColor: {
-              //   image: bg, // 这里替换为你的图片路径
-              // },
-              color: "#000",
-              fontSize: 18,
-            },
-          },
+          formatter: '{b}',
+          color: "#fff",
+          fontSize: 14,
+          fontWeight: 400,
         },
-        data: data,
+        data: seriesData,
       },
     ],
   };
   option && myChart.setOption(option);
 
   let isFinished = false;
-  myChart.on('finished', async () => {
+  myChart.on('finished', () => {
     if (isFinished) return;
     isFinished = true;
-    await nextTick();
-    const graphics = await prepareGraphics(myChart);
-    myChart.setOption({
-      graphic: graphics,
-    });
+    nextTick(() => {
+      const graphics = prepareGraphics(myChart);
+      myChart.setOption({
+        graphic: graphics,
+      });
+    })
   });
 }
-const prepareGraphics = (myChart) => {
+const prepareGraphics = (myChart: any) => {
   const seriesModel = myChart.getModel().getSeriesByIndex(0);
   const data = seriesModel.getData();
-  const graphics = [];
-  let list = _.cloneDeep(data);
+  const graphics: {
+    type: string; style: {
+      image: string; // 使用导入的背景图片
+      x: number; y: number; width: number; height: number;
+    }; z: number; // 确保在 rect 下层
+    silent: boolean;
+  }[] = [];
+  let list = cloneDeep(data);
   list._itemLayouts.shift();
-  list.each((idx) => {
+  list.each((idx: number) => {
     const layout = list.getItemLayout(idx);
     if (!layout) return;
-
     // const rect = {
     //   type: 'rect',
     //   shape: {
@@ -121,11 +122,12 @@ const prepareGraphics = (myChart) => {
     //   z: 100, // 确保在 treemap 上层
     //   silent: true, // 忽略鼠标交互
     // };
-
+    let colorsKey = getColorKey(idx,colorList.length);
+    let colors = colorList[colorsKey];
     const image = {
       type: 'image',
       style: {
-        image: bg, // 使用导入的背景图片
+        image: bgMap[colors], // 使用导入的背景图片
         x: layout.x,
         y: layout.y,
         width: layout.width,
@@ -137,11 +139,24 @@ const prepareGraphics = (myChart) => {
     // graphics.push(rect);
     graphics.push(image);
   });
-  console.log(graphics, '5555555555');
   return graphics;
 };
+let bgMap = reactive<Record<string,string>>({});
 onMounted(async () => {
   init();
+  // await Promise.all(
+  //   colorList.map(async (color) => {
+  //     const circleSvg = await replaceSvgColor(bg, '#3787FF', color);;
+  //     bgMap[color] = circleSvg;
+  //   })
+  // );
+  bgMap = Object.fromEntries(
+    await Promise.all(
+      colorList.map(async (color) => {
+        return [color, await replaceSvgColor(bg, '#57BEFB', color)];
+      })
+    )
+  );
 });
 const chartDom = ref(); 
 </script>

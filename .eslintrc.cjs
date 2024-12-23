@@ -15,7 +15,6 @@ module.exports = {
   },
   rules: {
     'no-undef': 'off',
-    'no-empty-pattern': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     'vue/multi-word-component-names': 'off',
     'no-unused-vars': 'off',
