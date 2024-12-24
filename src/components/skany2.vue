@@ -46,7 +46,6 @@ async function init() {
   });
   // 将 Set 转换为数组
   const uniqueNodes = Array.from(nodes);
-  console.log(uniqueNodes);
 
   let data = uniqueNodes.map((item, index) => {
     let position = links.find((t) => t.source === item);
@@ -101,7 +100,6 @@ async function init() {
       },
     ],
   };
-  console.log(option, 'option');
 
   option && myChart.setOption(option);
 }

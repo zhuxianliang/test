@@ -3,6 +3,8 @@ import treemap from './components/treemap.vue';
 import treemap1 from './components/treemap2.vue';
 import skany from './components/skany.vue';
 import skany1 from './components/skany2.vue';
+import radar from './components/radar.vue';
+import radar2 from './components/radar2.vue';
 </script>
 
 <template>
@@ -14,6 +16,7 @@ import skany1 from './components/skany2.vue';
           src="./assets/img/treemap.png"
           alt=""
           srcset="" />
+        <div class="text-center text-white">原型图</div>
       </div>
       <div class="h-[200px] w-[400px] border-2 border-[#333]">
         <treemap />
@@ -35,6 +38,7 @@ import skany1 from './components/skany2.vue';
           src="./assets/img/skany.png"
           alt=""
           srcset="" />
+        <div class="text-center text-white">原型图</div>
       </div>
       <div class="h-[200px] w-[400px] border-2 border-[#333]">
         <skany />
@@ -48,6 +52,38 @@ import skany1 from './components/skany2.vue';
           中间链接线渐变只能从开始位置到结束位置渐变，但左右两边矩形无法使用渐变，只能（rgb、rgba），无法设置单个矩形宽度
         </div>
       </div>
+    </div>
+    <div class="flex justify-center pt-20">
+      <div class="h-[200px] w-[400px] border-2 border-[#333]">
+        <img
+          class="h-full w-full"
+          src="./assets/img/radar.png"
+          alt=""
+          srcset="" />
+        <div class="text-center text-white">原型图</div>
+      </div>
+      <div class="h-[200px] w-[400px] border-2 border-[#333]">
+        <radar />
+        <div class="text-center text-white">使用背景图，位置是定死的</div>
+      </div>
+      <div class="h-[260px] w-[400px] border-2 border-[#333]">
+        <radar />
+        <div class="text-center text-white">
+          使用背景图，位置是定死的，放大的效果
+        </div>
+      </div>
+      <div class="h-[200px] w-[400px] border-2 border-[#333]">
+        <radar2 />
+        <div class="text-center text-white">
+          可单个设置样式（rgb,rbga）不可使用渐变
+        </div>
+      </div>
+      <!-- <div class="h-[200px] w-[400px] border-2 border-[#333]">
+        <skany1 />
+        <div class="text-center text-white">
+          中间链接线渐变只能从开始位置到结束位置渐变，但左右两边矩形无法使用渐变，只能（rgb、rgba），无法设置单个矩形宽度
+        </div>
+      </div> -->
     </div>
   </div>
 </template>

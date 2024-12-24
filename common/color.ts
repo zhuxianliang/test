@@ -3,11 +3,8 @@ import * as d3 from 'd3-color';
 export const getColorFromIndex = (colorList: string[], index: number) => {
   return colorList[index % colorList.length || 0];
 };
-export const getColorKey = (
-  i: number | string,
-  length: number
-) => {
-  let key = length || 0;
+export const getColorKey = (i: number | string, length: number) => {
+  const key = length || 0;
   // let name = isTiskColor ? 'l' : 'm';
   const index = typeof i === 'string' ? parseInt(i) % key : i % key;
   // if (type == 1) {
@@ -51,25 +48,20 @@ export const useSvg = (svgPath: Ref<string | undefined>) => {
   return {getSvg, loaded, clearSvg};
 };
 
-export const replaceSvgColor = (
+export const replaceSvgColor = async (
   svgPath: string,
   fromColor: string,
   toColor?: string
-) => {
-  return new Promise<string>( async(resolve) => {
-    if (toColor) {
-      const svgText = await fetch(svgPath).then((res) =>
-        res.text()
-      );
-      const newSvg = svgText.replace(new RegExp(fromColor, 'g'), toColor);
-      const blob = new Blob([newSvg], {type: 'image/svg+xml'});
-      const url = URL.createObjectURL(blob);
-
-      resolve(url);
-    } else {
-      resolve(svgPath);
-    }
-  });
+): Promise<string> => {
+  if (toColor) {
+    const svgText = await fetch(svgPath).then((res) => res.text());
+    const newSvg = svgText.replace(new RegExp(fromColor, 'g'), toColor);
+    const blob = new Blob([newSvg], {type: 'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    return url;
+  } else {
+    return svgPath;
+  }
 };
 
 export const setOpacity = (color?: string, opacity?: number) => {

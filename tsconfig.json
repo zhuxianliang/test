@@ -52,7 +52,8 @@
     "test/**/*.d.ts",
     "test/**/*.tsx",
     "test/**/*.vue",
-    "node_modules/@q/lc-common/global.d.ts"
+    "node_modules/@q/lc-common/global.d.ts",
+    "shims-svg.d.ts"
   ],
   "exclude": ["build/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
